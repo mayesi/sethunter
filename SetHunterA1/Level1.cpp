@@ -13,8 +13,11 @@ void Level1::Load()
 	background = new SpriteSheet((wchar_t*)L"background.bmp", gfx);
 	playerCar = new PlayerCar(carStartx, carStarty, gfx);
 	plants[0] = new SpriteSheet((wchar_t*)L"tree1.bmp", gfx);
+	plants[0]->AddChromakey();
 	plants[1] = new SpriteSheet((wchar_t*)L"tree2.bmp", gfx);
+	plants[1]->AddChromakey();
 	plants[2] = new SpriteSheet((wchar_t*)L"shrub1.bmp", gfx);
+	plants[2]->AddChromakey();
 
 	// construct a trivial random generator engine from a time-based seed:
 	unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();

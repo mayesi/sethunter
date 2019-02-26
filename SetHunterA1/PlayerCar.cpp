@@ -13,6 +13,7 @@
 PlayerCar::PlayerCar(float initx, float inity, Graphics* gfx)
 {
 	sprite = new SpriteSheet(carImage, gfx);
+	sprite->AddChromakey();
 	x = initx;
 	y = inity;
 	startingy = inity;

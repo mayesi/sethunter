@@ -24,6 +24,7 @@ SpriteSheet::SpriteSheet(wchar_t* filename, Graphics* gfx)
 {
 	this->gfx = gfx;	// save the gfx parameter for later
 	bmp = NULL;			// This needs to be NULL to start off
+	chromakeyEffect = NULL;	// This also needs to be NULL to start off
 	HRESULT hr;
 
 	// Step 1: Create a WIC Factory
@@ -86,8 +87,41 @@ SpriteSheet::SpriteSheet(wchar_t* filename, Graphics* gfx)
 SpriteSheet::~SpriteSheet()
 {
 	if (bmp) bmp->Release();
+	if (chromakeyEffect) chromakeyEffect->Release();
 }
 
+/*
+	Method:			AddChromakey()
+	Description:
+		Uses the other AddChromakey() method to add a chromakey effect with a default 
+		colour of blue.
+*/
+void SpriteSheet::AddChromakey()
+{
+	AddChromakey(0.0f, 0.0f, 1.0f);
+}
+
+
+/*
+	Method:			AddChromakey(float r, float g, float b)
+	Description:
+		Adds a chromakey effect to the spritesheet.
+	Parameters:
+		float r - RGB red value, 0.0 to 1.0
+		float g - RGB green value, 0.0 to 1.0
+		float b - RGB blue value, 0.0 to 1.0
+*/
+void SpriteSheet::AddChromakey(float r, float g, float b)
+{
+	D2D1_VECTOR_3F vector{ r, g, b };	// (red, green, blue)
+	gfx->GetDeviceContext()->CreateEffect(CLSID_D2D1ChromaKey, &chromakeyEffect);
+
+	chromakeyEffect->SetInput(0, bmp);
+	chromakeyEffect->SetValue(D2D1_CHROMAKEY_PROP_COLOR, vector);
+	chromakeyEffect->SetValue(D2D1_CHROMAKEY_PROP_TOLERANCE, 0.8f);
+	chromakeyEffect->SetValue(D2D1_CHROMAKEY_PROP_INVERT_ALPHA, false);
+	chromakeyEffect->SetValue(D2D1_CHROMAKEY_PROP_FEATHER, false);
+}
 
 /*
 	Method:			Draw()
@@ -112,21 +146,14 @@ void SpriteSheet::Draw()
 */
 void SpriteSheet::DrawChromakey(float x, float y)
 {
-	ID2D1Effect *chromakeyEffect = NULL;
+	if (chromakeyEffect == NULL)
+	{
+		Draw();
+	}
+	else
+	{
+		D2D1_POINT_2F coordinates = { x, y };	// Set the new coordinates to the passed in value
 
-	D2D1_VECTOR_3F vector{ 0.0f, 0.0f, 1.0f };	// (red, green, blue)
-	gfx->GetDeviceContext()->CreateEffect(CLSID_D2D1ChromaKey, &chromakeyEffect);
-
-	chromakeyEffect->SetInput(0, bmp);
-	chromakeyEffect->SetValue(D2D1_CHROMAKEY_PROP_COLOR, vector);
-	chromakeyEffect->SetValue(D2D1_CHROMAKEY_PROP_TOLERANCE, 0.8f);
-	chromakeyEffect->SetValue(D2D1_CHROMAKEY_PROP_INVERT_ALPHA, false);
-	chromakeyEffect->SetValue(D2D1_CHROMAKEY_PROP_FEATHER, false);
-
-	D2D1_POINT_2F coordinates = { x, y };	// Set the new coordinates to the passed in value
-
-	gfx->GetDeviceContext()->DrawImage(chromakeyEffect, coordinates, D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
-
-	if (chromakeyEffect) chromakeyEffect->Release();
-
+		gfx->GetDeviceContext()->DrawImage(chromakeyEffect, coordinates, D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
+	}
 }
