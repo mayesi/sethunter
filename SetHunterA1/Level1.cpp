@@ -20,7 +20,7 @@ void Level1::Load()
 	plants[2]->AddChromakey();
 
 	// construct a trivial random generator engine from a time-based seed:
-	unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+	unsigned int seed = (unsigned int)std::chrono::system_clock::now().time_since_epoch().count();
 	generator.seed(seed);
 	
 	SetupGrid();

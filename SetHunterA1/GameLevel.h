@@ -2,6 +2,7 @@
 
 #include "Graphics.h"
 #include "SpriteSheet.h"
+#include "KeyboardInput.h"
 
 /*
 	This abstract class defines the methods that can be used for Level classes for the game.
@@ -10,6 +11,7 @@ class GameLevel
 {
 protected:
 	static Graphics* gfx;
+	static KeyboardInput* keyboard;
 
 public:
 	static const int WIN_WIDTH = 1024;	// the window width
@@ -19,6 +21,12 @@ public:
 	static void Init(Graphics* graphics)
 	{
 		gfx = graphics;
+	}
+
+	static void Init(Graphics* graphics, KeyboardInput* input)
+	{
+		gfx = graphics;
+		keyboard = input;
 	}
 
 	virtual void Load() = 0;	// Loads the sprites and sets up the initial state of the game.

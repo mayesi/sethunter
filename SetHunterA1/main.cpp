@@ -3,9 +3,11 @@
 #include "Graphics.h"
 #include "Level1.h"
 #include "GameController.h"
+#include "KeyboardInput.h"
 
 
 Graphics* graphics;
+KeyboardInput* keyboardInput;
 
 /*
 	This is a function that processes messages sent to a window.
@@ -63,7 +65,15 @@ int WINAPI wWinMain(
 		return -1;
 	}
 
-	GameLevel::Init(graphics);
+	/* Create a DirectInput object for creating keyboard and mouse devices */
+	LPDIRECTINPUT8 m_diObject;
+	HRESULT hr = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+		(void**)&m_diObject, NULL);
+
+	/* Create the keyboard and mouse device objects */
+	keyboardInput = new KeyboardInput(windowhandle, m_diObject);
+
+	GameLevel::Init(graphics, keyboardInput);
 	ShowWindow(windowhandle, nCmdShow);
 	GameController::LoadInitialLevel(new Level1());
 
