@@ -42,10 +42,15 @@ bool KeyboardInput::GetDeviceState()
 
 	// We can 'AND' with 0x80 to find if the key was pressed. If it returns true, the key was pressed.
 	// If it is 0 the key was not pressed.
-	pKeys.pressed_a = (keys[DIK_A] & 0x80) > 0;
-	pKeys.pressed_w = (keys[DIK_W] & 0x80) > 0;
-	pKeys.pressed_s = (keys[DIK_S] & 0x80) > 0;
-	pKeys.pressed_d = (keys[DIK_D] & 0x80) > 0;
+	pKeys.pressed_left = (keys[DIK_A] & 0x80) > 0 || (keys[DIK_LEFTARROW] & 0x80) > 0;
+	pKeys.pressed_up = (keys[DIK_W] & 0x80) > 0 || (keys[DIK_UPARROW] & 0x80) > 0;
+	pKeys.pressed_down = (keys[DIK_S] & 0x80) > 0 || (keys[DIK_DOWNARROW] & 0x80) > 0;
+	pKeys.pressed_right = (keys[DIK_D] & 0x80) > 0 || (keys[DIK_RIGHTARROW] & 0x80) > 0;
 	
 	return true;
+}
+
+PressedKeys KeyboardInput::GetKeys()
+{
+	return pKeys;
 }

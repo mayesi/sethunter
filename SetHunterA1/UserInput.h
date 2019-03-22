@@ -1,4 +1,5 @@
 // From http://keithditch.powweb.com/Games/html/directinput.html
+// I could have used Windows messages instead, but I already coded this up so...
 #pragma once
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>	// for handling keyboard and mouse input

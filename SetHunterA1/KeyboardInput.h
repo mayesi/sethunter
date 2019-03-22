@@ -3,10 +3,10 @@
 
 typedef struct PressedKeys
 {
-	bool pressed_w;
-	bool pressed_s;
-	bool pressed_a;
-	bool pressed_d;
+	bool pressed_up;
+	bool pressed_down;
+	bool pressed_left;
+	bool pressed_right;
 } PressedKeys;
 
 class KeyboardInput : public UserInput
@@ -20,4 +20,5 @@ public:
 	~KeyboardInput();	// destructor
 
 	bool GetDeviceState();	// Get data from the device, map to chars
+	PressedKeys GetKeys();
 };
