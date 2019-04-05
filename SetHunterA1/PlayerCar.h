@@ -9,7 +9,7 @@
 class PlayerCar : public MovingObject
 {
 private:
-	const float defaultSpeed = 0.0f;	// The car should start at not moving, previously set at 5.0f
+	const float defaultSpeed = 5.0f;
 	const Boundary defaultBoundary = { 0.0f, 80.0f, 20.0f, 100.0f };
 	const float defaultAccelRate = 0.2f;
 	const float defaultTopSpeed = 10.0f;

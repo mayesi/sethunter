@@ -13,6 +13,10 @@
 #include <d2d1effects.h>
 #include <d2d1effects_2.h>
 #include <d2d1effecthelpers.h>
+#include <dwrite.h>
+
+static const WCHAR msc_fontName[] = L"Verdana";
+static const FLOAT msc_fontSize = 50;
 
 /* This class handles rendering of the window graphics */
 class Graphics
@@ -22,6 +26,9 @@ class Graphics
 	ID2D1Factory* factory;					// The factory allows us to create many other types of D2D resources
 	ID2D1HwndRenderTarget* rendertarget;	// this is typically an area in our GPU memory.. like a back buffer 
 	ID2D1SolidColorBrush* grayBrush;		// a gray coloured brush
+	ID2D1SolidColorBrush* whiteBrush;		// a white coloured brush
+	IDWriteFactory* wfactory;				// This factory allows us to create text
+	IDWriteTextFormat* textFormat;			// Text format object
 
 public:
 	
@@ -50,5 +57,7 @@ public:
 	void ClearScreen(float r, float g, float b);
 
 	ID2D1SolidColorBrush* GrayBrush();
+	ID2D1SolidColorBrush* WhiteBrush() { return whiteBrush; };
+	IDWriteTextFormat* TextFormat() { return textFormat; };
 
 };

@@ -88,11 +88,11 @@ void PlayerCar::Move(PressedKeys keys)
 	// Compare left and right key presses (a and d)
 	if (keys.pressed_left && !keys.pressed_right) // Go left
 	{
-		tempx = x - speed;
+		tempx = x - defaultSpeed;
 	}
 	else if (!keys.pressed_left && keys.pressed_right)	// Go right
 	{
-		tempx = x + speed;
+		tempx = x + defaultSpeed;
 	}
 	
 	// Compare up and down key presses (w and s)

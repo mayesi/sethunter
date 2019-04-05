@@ -57,6 +57,33 @@ bool Graphics::Init(HWND windowHandle)
 	result = rendertarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f, 1.0f), &grayBrush);
 	if (result != S_OK) return false;
 
+	/* Set up the white brush */
+	result = rendertarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f), &whiteBrush);
+	if (result != S_OK) return false;
+
+	/* Create another factory for setting up writing text to the screen */
+	result = DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(wfactory),
+		reinterpret_cast<IUnknown **>(&wfactory));
+	if (!SUCCEEDED(result)) return false;
+	
+	/* Create the text format object */
+	result = wfactory->CreateTextFormat(
+		msc_fontName,
+		NULL,
+		DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		msc_fontSize,
+		L"", // locale
+		&textFormat);
+
+	/* Set the text alignment */
+	if (!SUCCEEDED(result)) return false;
+	textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+	textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
 	return true;
 }
 
