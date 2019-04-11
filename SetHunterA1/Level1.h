@@ -6,6 +6,7 @@
 #include "GameTimer.h"
 #include "SoundEvent.h"
 #include "AudioComponent.h"
+#include "CollisionDetector.h"
 #include <vector>
 #include <random>
 #include <chrono>
@@ -21,6 +22,13 @@ typedef struct PlantSquare
 	bool render;
 } PlantSquare;
 
+typedef struct PlantInfo
+{
+	float hitOffsetx;
+	float hitOffsety;
+	float hitWidth;
+	float hitHeight;
+};
 
 /* 
 	This class has the logic for Level 1 in the game. It inherits from GameLevel.
@@ -45,20 +53,22 @@ class Level1 : public GameLevel
 	const int NUM_SQUARE_Y = 11;	// 'divide' the screen into this number of squares
 	const int NUM_VISIBLE_SQUARE_Y = 10;	// 'divide' the screen into this number of visible squares
 	const int STARTING_LIVES = 3;	// Default starting lives
+	
+	SpriteSheet* plants[3];		// Holds the three different plant sprites that can be put on the screen
+	std::vector<PlantSquare> plantSquares;	// The grid that the plants are placed in
+	std::vector<PlantInfo> plantInfo = { { 0, 0, 100, 100 }, { 20, 0, 60, 100 }, { 10, 5, 30, 40} };
+	float plantOffset;	// the offset for drawing to the screen
 
 	PlayerCar* playerCar;		// The player's car
 	int score;	// The player's current score
 	int lives;	// The player's current lives
 	GameTimer* timer;	// For timing the game
-	SpriteSheet* plants[3];		// Holds the three different plant sprites that can be put on the screen
-	std::vector<PlantSquare> plantSquares;	// The grid that the plants are placed in
 	std::default_random_engine generator;	// Random number generator for integers
 	float targetLeftx;	// Where the left pixel of the road is meant to go, used for drawing
 	float bendValue;	// How much to curve the road, <0 curve left, 0 straight, >0 curve right
 	float straightLength;		// The length of a straight section of road
 	std::deque<float> roadDims;	// The road dimensions
-	int sceneSpeed;		// this determines the speed of the scene 'movement'
-	float plantOffset;	// the offset for drawing to the screen
+	int sceneSpeed;		// this determines the speed of the scene 'movement'	
 
 	int GetChoice(int numChoices);	// Pick one of numChoices choices
 	void InitRoad();	// Initializes the road dimensions with x-values, one x-value for each y value
@@ -83,12 +93,13 @@ public:
 
 	void DrawScore();
 
-	void PlacePlants();		// Randomly draw plants on the screen
+	void RenderPlants();		// Randomly draw plants on the screen
 	void InitPlants();		// Sets up the plant placements at the start of the level
 	void UpdatePlants();	// Randomly places plants somewhere in the grid
 	void SetupGrid();		// Sets up the plantSquares vector with coordinates etc.
 
 	bool IsRoadHere(float gridx, float gridy);
+	bool CheckPlayerCollision();	// Checks to see if the player sprite has collided with any objects
 
 	void DrawRoad();		// Draws the background
 

@@ -110,7 +110,6 @@ int WINAPI wWinMain(
 			graphics->BeginDraw();
 			GameController::Render();
 			graphics->EndDraw();
-
 		}
 	}
 

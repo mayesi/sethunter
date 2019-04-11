@@ -13,6 +13,12 @@ private:
 	const Boundary defaultBoundary = { 0.0f, 80.0f, 20.0f, 100.0f };
 	const float defaultAccelRate = 0.2f;
 	const float defaultTopSpeed = 10.0f;
+
+	HitBox hitbox;
+	const float hitOffsetx = 25.0f;	// from the left side
+	const float hitOffsety = 0.0f;	// from the top
+	const float hitWidth = 50.0f;
+	const float hitHeight = 100.0f;
 	
 	wchar_t* carImage = (wchar_t*)L"playercar.bmp";	// the bmp file name for the car image
 	float startingx;		// This is the x position that the car starts from when the screen resets
@@ -40,4 +46,6 @@ public:
 	void SetBoundary(Boundary bounds);	// Set the boundaries for car movement
 	void SetTopSpeed(float top);		// Set the object's top speed
 	float GetSpeed();		// Get the object's current speed
+	void SetHitBox();		// Set the object's hitbox parameters
+	HitBox GetHitBox();		// Gets the hitbox
 };

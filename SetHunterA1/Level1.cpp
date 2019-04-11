@@ -37,7 +37,7 @@ void Level1::Load()
 	//UpdatePlants();
 	InitRoad();
 	InitPlants();
-	sceneSpeed = 8.0f;
+	sceneSpeed = 1.0f;
 	plantOffset = 0;
 
 	// Set up player score and lives, set up timer
@@ -94,9 +94,25 @@ void Level1::Update()
 		timer->StartTimer();
 	}
 
-	if (IsPlantHere(playerCar->Getxy().x, playerCar->Getxy().y))
+	//if (IsPlantHere(playerCar->Getxy().x, playerCar->Getxy().y))
+	//{
+	//	score = 0;
+	//}
+	
+	//Check for plant collision
+	if (CheckPlayerCollision())
 	{
 		score = 0;
+	}
+
+	plantOffset += sceneSpeed;
+	float delta = plantOffset - ((float)GameLevel::WIN_HEIGHT / (float) NUM_SQUARE_Y);
+	if (delta > 0)
+	{
+		// Reset the plant y coord offset to 0 and adjust the plants in the vector
+		//plantOffset = 0;
+		plantOffset = plantOffset - ((float) GameLevel::WIN_HEIGHT / (float) NUM_SQUARE_Y);
+		UpdatePlants();
 	}
 }
 
@@ -110,7 +126,7 @@ void Level1::Render()
 	//gfx->ClearScreen(0.0f, 0.0f, 0.5f);
 	gfx->ClearScreen(0.05f, 0.2f, 0.0f);
 	DrawRoad();
-	PlacePlants();
+	RenderPlants();
 	playerCar->DrawSprite();
 	DrawScore();
 }
@@ -140,7 +156,7 @@ void Level1::DrawScore()
 	Description:	This method handles drawing plants in the window. The placement depends on 
 					the the information in plantSquares. 
 */
-void Level1::PlacePlants()
+void Level1::RenderPlants()
 {
 	float x = 0;	// x coord
 	float y = 0;	// y coord
@@ -159,13 +175,14 @@ void Level1::PlacePlants()
 		}
 	}
 
-	plantOffset += sceneSpeed;
-	if (plantOffset > GameLevel::WIN_HEIGHT / NUM_VISIBLE_SQUARE_Y)
-	{
-		// Reset the plant y coord offset to 0 and adjust the plants in the vector
-		plantOffset = 0;
-		UpdatePlants();
-	}
+	//plantOffset += sceneSpeed;
+	//if (plantOffset > GameLevel::WIN_HEIGHT / NUM_VISIBLE_SQUARE_Y)
+	//{
+	//	// Reset the plant y coord offset to 0 and adjust the plants in the vector
+	//	//plantOffset = 0;
+	//	plantOffset = plantOffset - (GameLevel::WIN_HEIGHT / NUM_VISIBLE_SQUARE_Y);
+	//	UpdatePlants();
+	//}
 }
 
 
@@ -252,21 +269,31 @@ void Level1::SetupGrid()
 	int w = GameLevel::WIN_WIDTH / NUM_SQUARE_X;	// width in pixels of a square
 	int h = GameLevel::WIN_HEIGHT / NUM_SQUARE_Y;	// height in pixels of a square
 
-	// Place the first row into the vector, this row is entirely offscreen to start with
-	for (int col = 0; col < NUM_SQUARE_X; col++)
-	{
-		// Make a PlantSquare object with the pixel position and put it in the plantSquares vector
-		PlantSquare ps = { w*(float)col, h*(float)(-1), -1 };
-		plantSquares.push_back(ps);
-	}
+	//// Place the first row into the vector, this row is entirely offscreen to start with
+	//for (int col = 0; col < NUM_SQUARE_X; col++)
+	//{
+	//	// Make a PlantSquare object with the pixel position and put it in the plantSquares vector
+	//	PlantSquare ps = { w*(float)col, h*(float)(-1), -1 };
+	//	plantSquares.push_back(ps);
+	//}
 
-	// Place the rest of the rows
-	for (int row = 0; row < NUM_SQUARE_Y; row++)	// for all the rows...
+	//// Place the rest of the rows
+	//for (int row = 0; row < NUM_SQUARE_Y; row++)	// for all the rows...
+	//{
+	//	for (int col = 0; col < NUM_SQUARE_X; col++)
+	//	{
+	//		// Make a PlantSquare object with the pixel position and put it in the plantSquares vector
+	//		PlantSquare ps = { w*(float)col, h*(float)row, -1 };
+	//		plantSquares.push_back(ps);
+	//	}
+	//}
+
+	for (int row = 0; row < NUM_SQUARE_Y + 1; row++)	// for all the rows...
 	{
 		for (int col = 0; col < NUM_SQUARE_X; col++)
 		{
 			// Make a PlantSquare object with the pixel position and put it in the plantSquares vector
-			PlantSquare ps = { w*(float)col, h*(float)row, -1 };
+			PlantSquare ps = { w*(float)col, h*(float)(row - 1), -1 };
 			plantSquares.push_back(ps);
 		}
 	}
@@ -298,6 +325,28 @@ bool Level1::IsRoadHere(float gridx, float gridy)
 		}
 	}
 
+	return false;
+}
+
+bool Level1::CheckPlayerCollision()
+{
+	bool result = false;
+
+	// If there is a plant sqare in the square, check to see if the player sprite has collided
+	for (int i = 0; i < plantSquares.size(); i++)
+	{
+		if (plantSquares[i].plant > -1 && plantSquares[i].render == true)
+		{
+			int hitIndex = plantSquares[i].plant;
+			HitBox hitbox = { 0,0,0,0 };
+			hitbox.upperx = plantSquares[i].x + plantInfo[hitIndex].hitOffsetx;
+			hitbox.uppery = plantSquares[i].y + plantInfo[hitIndex].hitOffsety + plantOffset;
+			hitbox.lowerx = plantSquares[i].x + plantInfo[hitIndex].hitOffsetx + plantInfo[hitIndex].hitWidth;
+			hitbox.lowery = plantSquares[i].y + plantInfo[hitIndex].hitOffsety + plantInfo[hitIndex].hitHeight + plantOffset;
+			result = CollisionDetector::CollisionCheck(playerCar->GetHitBox(), hitbox);
+			if (result) return true;
+		}
+	}
 	return false;
 }
 
@@ -470,3 +519,4 @@ bool Level1::IsPlantHere(float gridx, float gridy)
 
 	return false;
 }
+

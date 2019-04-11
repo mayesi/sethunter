@@ -32,6 +32,12 @@ PlayerCar::PlayerCar(float initx, float inity, Graphics* gfx)
 	bounds = defaultBoundary;
 	accelRate = defaultAccelRate;
 	topSpeed = defaultTopSpeed;
+
+	// Set the bounding box info
+	hitbox.upperx = x + hitOffsetx;
+	hitbox.uppery = y;
+	hitbox.lowerx = x + hitOffsetx + hitWidth;
+	hitbox.lowery = y + hitHeight;
 }
 
 
@@ -124,6 +130,9 @@ void PlayerCar::Move(PressedKeys keys)
 	{
 		y = tempy;
 	}
+
+	// Set the hitbox values
+	SetHitBox();
 }
 
 
@@ -253,4 +262,17 @@ void PlayerCar::SetTopSpeed(float top)
 float PlayerCar::GetSpeed()
 {
 	return speed;
+}
+
+void PlayerCar::SetHitBox()
+{
+	hitbox.upperx = x + hitOffsetx;
+	hitbox.uppery = y + hitOffsety;
+	hitbox.lowerx = x + hitOffsetx + hitWidth;
+	hitbox.lowery = y + hitOffsety + hitHeight;
+}
+
+HitBox PlayerCar::GetHitBox()
+{
+	return hitbox;
 }

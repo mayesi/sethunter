@@ -156,4 +156,5 @@ void SpriteSheet::DrawChromakey(float x, float y)
 
 		gfx->GetDeviceContext()->DrawImage(chromakeyEffect, coordinates, D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
 	}
+	
 }
