@@ -17,6 +17,9 @@ public:
 	static const int WIN_WIDTH = 1024;	// the window width
 	static const int WIN_HEIGHT = 768;	// the window height
 
+	bool switchLevel = false;	// GameController looks at this to see if it needs to switch the level
+	int nextLevel = 0;			// The next level to switch to
+
 	/* Sets this class's Graphics object to the passed in Graphics object */
 	static void Init(Graphics* graphics)
 	{

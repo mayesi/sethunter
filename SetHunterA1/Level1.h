@@ -4,6 +4,8 @@
 #include "PlayerCar.h"
 #include "Graphics.h"
 #include "GameTimer.h"
+#include "SoundEvent.h"
+#include "AudioComponent.h"
 #include <vector>
 #include <random>
 #include <chrono>
@@ -65,6 +67,10 @@ class Level1 : public GameLevel
 	float RandNumber(float min, float max, int interval);	// Random number, float
 
 	bool IsPlantHere(float gridx, float gridy);
+
+	SoundEvent* levelMusic;
+	AudioComponent* audioComponent;
+	const std::wstring musicFile = L"action52.wav";
 
 public:
 	static const int WIN_WIDTH = 1024;	// the window width

@@ -1,6 +1,7 @@
 /* A lot of this code is taken from examples provided in the Graphics, Animation and Sound course */
 #include <Windows.h>
 #include "Graphics.h"
+#include "Level0.h"
 #include "Level1.h"
 #include "GameController.h"
 #include "KeyboardInput.h"
@@ -75,7 +76,8 @@ int WINAPI wWinMain(
 
 	GameLevel::Init(graphics, keyboardInput);
 	ShowWindow(windowhandle, nCmdShow);
-	GameController::LoadInitialLevel(new Level1());
+	//GameController::LoadInitialLevel(new Level1());
+	GameController::LoadInitialLevel(new Level0());
 
 #pragma region GameLoop
 	//Below, we have essentially an infinite loop that will keep the window running and will dispatch/show messages
@@ -94,6 +96,13 @@ int WINAPI wWinMain(
 			DispatchMessage(&message);
 		else
 		{
+			if (GameController::currentLevel->switchLevel)
+			{
+				if (GameController::currentLevel->nextLevel == 1)
+				{
+					GameController::SwitchLevel(new Level1());
+				}
+			}
 			//Update Routine... we've moved the code for handling updates to GameController
 			GameController::Update();
 

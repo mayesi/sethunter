@@ -9,6 +9,10 @@
 */
 void Level1::Load()
 {
+	// Set up the level
+	switchLevel = false;
+	nextLevel = 0;
+
 	//This is where we can specify our file system objects!
 	//background = new SpriteSheet((wchar_t*)L"background.bmp", gfx);
 	playerCar = new PlayerCar(CAR_START_X, CAR_START_Y, gfx);	// may want to adjust this to make it more centered
@@ -41,6 +45,17 @@ void Level1::Load()
 	lives = STARTING_LIVES;
 	timer = new GameTimer();
 	timer->StartTimer();
+
+	// Load the music
+	audioComponent = new AudioComponent();
+	levelMusic = new SoundEvent();
+
+	bool result = audioComponent->LoadFile(musicFile, *levelMusic);
+	if (result)
+	{
+		levelMusic->SetLoopForever();
+		audioComponent->PlaySoundEvent(*levelMusic);
+	}
 }
 
 
@@ -55,6 +70,7 @@ void Level1::Unload()
 	for (int i = 0; i < 3; i++) {
 		delete plants[0];
 	}
+	audioComponent->StopSoundEvent(*levelMusic);
 }
 
 

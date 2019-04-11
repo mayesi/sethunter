@@ -8,8 +8,9 @@
 class GameController
 {
 	GameController() {}				// Constructor
-	static GameLevel* currentLevel;	// GameLevel object
+	
 public:
+	static GameLevel* currentLevel;	// GameLevel object
 	static bool Loading;	// Indicates whether assets are being loaded
 	static void Init();		// 
 	static void LoadInitialLevel(GameLevel* lev);
