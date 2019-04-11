@@ -27,7 +27,7 @@ KeyboardInput::~KeyboardInput()
 
 bool KeyboardInput::GetDeviceState()
 {
-	pKeys = { false, false, false, false }; // reset
+	pKeys = { false, false, false, false, false }; // reset
 	
 	// Acquire the device, if failed return false
 	Acquire();
@@ -46,6 +46,7 @@ bool KeyboardInput::GetDeviceState()
 	pKeys.pressed_up = (keys[DIK_W] & 0x80) > 0 || (keys[DIK_UPARROW] & 0x80) > 0;
 	pKeys.pressed_down = (keys[DIK_S] & 0x80) > 0 || (keys[DIK_DOWNARROW] & 0x80) > 0;
 	pKeys.pressed_right = (keys[DIK_D] & 0x80) > 0 || (keys[DIK_RIGHTARROW] & 0x80) > 0;
+	pKeys.pressed_space = keys[DIK_SPACE];
 	
 	return true;
 }
