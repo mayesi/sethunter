@@ -14,13 +14,14 @@ void Level1::Load()
 	switchLevel = false;
 	nextLevel = 0;
 
-	//This is where we can specify our file system objects!
-	//background = new SpriteSheet((wchar_t*)L"background.bmp", gfx);
+	// Set up the player car
 	playerCar = new PlayerCar(CAR_START_X, CAR_START_Y, gfx);	// may want to adjust this to make it more centered
 	D2D1_SIZE_F size = gfx->GetRenderTarget()->GetSize();
 	Boundary playerBounds = { NULL, NULL, NULL, NULL };
 	playerBounds.upper = size.height / 2;
 	playerCar->SetBoundary(playerBounds);
+
+	// Add the plant assets
 	plants[0] = new SpriteSheet((wchar_t*)L"tree1.bmp", gfx);
 	plants[0]->AddChromakey();
 	plants[1] = new SpriteSheet((wchar_t*)L"tree2.bmp", gfx);
@@ -28,30 +29,23 @@ void Level1::Load()
 	plants[2] = new SpriteSheet((wchar_t*)L"shrub1.bmp", gfx);
 	plants[2]->AddChromakey();
 
-	// construct a trivial random generator engine from a time-based seed:
-	unsigned int seed = (unsigned int)std::chrono::system_clock::now().time_since_epoch().count();
-	generator.seed(seed);
-	srand(time(NULL)); // Also seed srand...
+	// Set up the random number generator
+	randomizer = new Randomizer();
 	
 	// Set up the background scene
 	SetupGrid();
-	//UpdatePlants();
 	InitRoad();
 	InitPlants();
 	sceneSpeed = 4.0f;
 	plantOffset = 0;
 
-	// Set up player score and lives, set up timer
-	score = 0;
-	lives = STARTING_LIVES;
-	timer = new GameTimer();
-	timer->StartTimer();
-
 	// Load the music
 	audioComponent = new AudioComponent();
 	levelMusic = new SoundEvent();
 	dangerMusic = new SoundEvent();
+	explosionSFX = new SoundEvent();
 
+	// Load the music and sound effects, set some to loop
 	bool result = audioComponent->LoadFile(musicFile, *levelMusic);
 	if (result)
 	{
@@ -64,6 +58,13 @@ void Level1::Load()
 	{
 		dangerMusic->SetLoopForever();
 	}
+
+	result = audioComponent->LoadFile(explosionSFXFile, *explosionSFX);
+
+	// Set up player score and lives, set up timer
+	score = 0;
+	lives = STARTING_LIVES;
+	timer = new GameTimer();
 }
 
 
@@ -78,7 +79,9 @@ void Level1::Unload()
 	for (int i = 0; i < 3; i++) {
 		delete plants[0];
 	}
+	// Stop the music playing
 	audioComponent->StopSoundEvent(*levelMusic);
+	audioComponent->StopSoundEvent(*dangerMusic);
 }
 
 
@@ -88,34 +91,49 @@ void Level1::Unload()
 */
 void Level1::Update()
 {
+	// Start the timer for the first time
+	if (!initialized)
+	{
+		timer->StartTimer();
+		initialized = true;
+	}
+
+	// REMOVE THIS CODE LATER
 	if (lives < 0)
 	{
 		sceneSpeed = 8.0f;
 	}
 
+	// Calculate the score. Could implement the 3 second off road penalty later...
+	double time = timer->GetTime();
+	if (time  > 0.01f)	// every hundredth of a second...
+	{
+		if (IsRoadHere(playerCar->Getxy().x, playerCar->Getxy().y))
+		{
+			// The score is added, one point per millisecond...
+			score += (int)(time * 1000);
+		}
+		timer->StartTimer();
+	}
+
+	// Get the user input
 	keyboard->GetDeviceState();
 	PressedKeys keys = keyboard->GetKeys();
 	playerCar->Move(keys);
 	ShiftRoad();
 
-	if (timer->GetTime() > 0.001f)
-	{
-		if (IsRoadHere(playerCar->Getxy().x, playerCar->Getxy().y))
-		{
-			score++;
-		}
-		timer->StartTimer();
-	}
-
+	// Set up the plants
 	plantOffset += sceneSpeed;
 	float delta = plantOffset - ((float)GameLevel::WIN_HEIGHT / (float) NUM_SQUARE_Y);
 	if (delta > 0)
 	{
-		// Reset the plant y coord offset to 0 and adjust the plants in the vector
-		//plantOffset = 0;
+		// Reset the plant y coord offset and adjust the plants in the vector
 		plantOffset = plantOffset - ((float) GameLevel::WIN_HEIGHT / (float) NUM_SQUARE_Y);
 		UpdatePlants();
 	}
+
+	// Set up an enemy car to spawn and move any existing enemy cars
+
 
 	//Check for collisions
 	if (CheckPlayerCollision())
@@ -125,7 +143,7 @@ void Level1::Update()
 		if (!inCollision)
 		{
 			lives--;
-			
+			audioComponent->PlaySoundEvent(*explosionSFX);
 			// Play different music if the number of lives is now 1
 			if (lives == 1)
 			{ 
@@ -133,8 +151,7 @@ void Level1::Update()
 				audioComponent->PlaySoundEvent(*dangerMusic);
 			}
 		}
-		//score = 0;
-		inCollision = true;
+		inCollision = true;	
 	}
 	else
 	{
@@ -154,15 +171,11 @@ void Level1::Update()
 */
 void Level1::Render()
 {
-	//gfx->ClearScreen(0.0f, 0.0f, 0.5f);
 	gfx->ClearScreen(0.05f, 0.2f, 0.0f);
 	DrawRoad();
 	RenderPlants();
 	playerCar->DrawSprite();
-	DrawScore();
-	DrawLives();
-
-	
+	DrawLivesScore();
 }
 
 
@@ -181,10 +194,10 @@ void Level1::DrawScore()
 		gfx->WhiteBrush()
 	);
 
-
 }
 
 
+// Draws the remaining lives on the screen
 void Level1::DrawLives()
 {
 	// Retrieve the size of the render target.
@@ -192,7 +205,6 @@ void Level1::DrawLives()
 
 	WCHAR livesText[256];
 	swprintf(livesText, 256, L"%s%d", L"Lives: ", lives);
-	//_itow_s(lives, livesText, 256, 10);
 
 	gfx->GetRenderTarget()->DrawText(
 		livesText,
@@ -203,6 +215,24 @@ void Level1::DrawLives()
 	);
 }
 
+
+// Draws the remaining lives on the screen
+void Level1::DrawLivesScore()
+{
+	// Retrieve the size of the render target.
+	D2D1_SIZE_F renderTargetSize = gfx->GetRenderTarget()->GetSize();
+
+	WCHAR livesText[256];
+	swprintf(livesText, 256, L"Lives: %d\nScore: %d", lives, score);
+
+	gfx->GetRenderTarget()->DrawText(
+		livesText,
+		wcslen(livesText),
+		gfx->TextFormatUpperLeftCorner(),
+		D2D1::RectF(0, 0, renderTargetSize.width, renderTargetSize.height),
+		gfx->WhiteBrush()
+	);
+}
 
 
 /*
@@ -229,14 +259,6 @@ void Level1::RenderPlants()
 		}
 	}
 
-	//plantOffset += sceneSpeed;
-	//if (plantOffset > GameLevel::WIN_HEIGHT / NUM_VISIBLE_SQUARE_Y)
-	//{
-	//	// Reset the plant y coord offset to 0 and adjust the plants in the vector
-	//	//plantOffset = 0;
-	//	plantOffset = plantOffset - (GameLevel::WIN_HEIGHT / NUM_VISIBLE_SQUARE_Y);
-	//	UpdatePlants();
-	//}
 }
 
 
@@ -248,17 +270,16 @@ void Level1::RenderPlants()
 	*/
 void Level1::InitPlants()
 {
-	std::uniform_int_distribution<int> distribution(0, 19);	// 1 in 20 chance of having a plant in the square
-	std::uniform_int_distribution<int> whichPlant(0, 2);	// pick 1 of 3 plants
-
 	int number = 0;
 
 	for (int i = 0; i < plantSquares.size(); i++)
 	{
-		number = distribution(generator);	// pick the number
-		if (number == 0)	// 1 in 20 chance of picking 0
+		// pick the number, 1 in 20 chance of picking 0
+		number = randomizer->GetChoice(20);
+		if (number == 0)	
 		{
-			plantSquares[i].plant = whichPlant(generator);	// randomly pick a plant asset for the square
+			// randomly pick a plant asset for the square
+			plantSquares[i].plant = randomizer->GetChoice(3);
 			plantSquares[i].render = !IsRoadHere(plantSquares[i].x, plantSquares[i].y);
 		}
 		else
@@ -287,16 +308,16 @@ void Level1::UpdatePlants()
 	}
 
 	// Set up the first rows' values
-	std::uniform_int_distribution<int> distribution(0, 19);	// 1 in 20 chance of having a plant in the square
-	std::uniform_int_distribution<int> whichPlant(0, 2);	// pick 1 of 3 plants
 	int number = 0;
 
 	for (int i = 0; i < NUM_SQUARE_X; i++)
 	{
-		number = distribution(generator);	// pick the number
-		if (number == 0)	// 1 in 20 chance of picking 0
+		// pick the number, 1 in 20 chance of picking 0
+		number = randomizer->GetChoice(20);
+		if (number == 0)	 
 		{
-			plantSquares[i].plant = whichPlant(generator);	// randomly pick a plant asset for the square
+			// randomly pick a plant asset for the square
+			plantSquares[i].plant = randomizer->GetChoice(3);
 			plantSquares[i].render = !IsRoadHere(plantSquares[i].x, plantSquares[i].y);
 		}
 		else
@@ -322,25 +343,6 @@ void Level1::SetupGrid()
 
 	int w = GameLevel::WIN_WIDTH / NUM_SQUARE_X;	// width in pixels of a square
 	int h = GameLevel::WIN_HEIGHT / NUM_SQUARE_Y;	// height in pixels of a square
-
-	//// Place the first row into the vector, this row is entirely offscreen to start with
-	//for (int col = 0; col < NUM_SQUARE_X; col++)
-	//{
-	//	// Make a PlantSquare object with the pixel position and put it in the plantSquares vector
-	//	PlantSquare ps = { w*(float)col, h*(float)(-1), -1 };
-	//	plantSquares.push_back(ps);
-	//}
-
-	//// Place the rest of the rows
-	//for (int row = 0; row < NUM_SQUARE_Y; row++)	// for all the rows...
-	//{
-	//	for (int col = 0; col < NUM_SQUARE_X; col++)
-	//	{
-	//		// Make a PlantSquare object with the pixel position and put it in the plantSquares vector
-	//		PlantSquare ps = { w*(float)col, h*(float)row, -1 };
-	//		plantSquares.push_back(ps);
-	//	}
-	//}
 
 	for (int row = 0; row < NUM_SQUARE_Y + 1; row++)	// for all the rows...
 	{
@@ -416,23 +418,17 @@ void Level1::DrawRoad()
 	D2D1_POINT_2F point2;
 	point2.y = y;
 
-	//int i = (int)GameLevel::WIN_HEIGHT / 10;
 	for (int i = 0; y < GameLevel::WIN_HEIGHT; i++)
-	/*for (i; i < GameLevel::WIN_HEIGHT/sceneSpeed; i++)*/
-	//for (i; i < GameLevel::WIN_HEIGHT + i - 1; i++)
 	{
 		y += (float)sceneSpeed;
 		point1.x = roadDims[i];
-		//point1.y++;
 		point1.y = y;
 		point2.x = point1.x + ROAD_WIDTH;
-		//point2.y++;
 		point2.y = y;
 		gfx->GetRenderTarget()->DrawLine(
 			point1,
 			point2,
 			gfx->GrayBrush(),
-			//1.0f
 			(float)sceneSpeed
 		);
 	}
@@ -440,21 +436,6 @@ void Level1::DrawRoad()
 
 }
 
-
-/*
-	Method:		GetChoice()
-	Description:
-		Uses a random number generator to choose one of a passed in number of choices.
-	Parameters:
-		int numChoices - the number of possibilities to choose from
-	Return:
-		int - the choice, 0 to numChoices - 1;
-*/
-int Level1::GetChoice(int numChoices)
-{
-	std::uniform_int_distribution<int> whichChoice(0, numChoices - 1);	// pick 1 of numChoice choices
-	return whichChoice(generator);
-}
 
 
 /*
@@ -508,35 +489,26 @@ void Level1::ShiftRoad()
 void Level1::SetNewCurve() 
 {
 	// Right now the road tends to stay straight
-	float tempTarget = RandNumber(ROAD_LEFT_X_LEFTMOST, ROAD_LEFT_X_RIGHTMOST, 100);
+	float tempTarget = randomizer->RandNumber(ROAD_LEFT_X_LEFTMOST, ROAD_LEFT_X_RIGHTMOST, 100);
 
 	if (tempTarget - targetLeftx > MIN_X_OFFSET) // go left
 	{
-		bendValue = RandNumber(MIN_BEND, MAX_BEND, BEND_INTERVAL) * -1.0f;
+		bendValue = randomizer->RandNumber(MIN_BEND, MAX_BEND, BEND_INTERVAL) * -1.0f;
 	}
 	else if ((tempTarget - targetLeftx)*(-1) > MIN_X_OFFSET) // go right
 	{
-		bendValue = RandNumber(MIN_BEND, MAX_BEND, BEND_INTERVAL);
+		bendValue = randomizer->RandNumber(MIN_BEND, MAX_BEND, BEND_INTERVAL);
 	}
 	else // go straight
 	{
 		// set the bend value and road length
 		bendValue = 0;
-		straightLength = RandNumber(MIN_STRAIGHT, MAX_STRAIGHT, STRAIGHT_INTERVAL);
+		straightLength = randomizer->RandNumber(MIN_STRAIGHT, MAX_STRAIGHT, STRAIGHT_INTERVAL);
 	}
 
 	targetLeftx = tempTarget;
 }
 
-
-/*
-	Method:		RandNumber(float min, float max, int interval)
-*/
-float Level1::RandNumber(float min, float max, int interval)
-{
-	float result = min + ((rand() % interval) * (max - min)) / interval;
-	return result;
-}
 
 
 

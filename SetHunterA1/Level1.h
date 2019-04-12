@@ -7,9 +7,11 @@
 #include "SoundEvent.h"
 #include "AudioComponent.h"
 #include "CollisionDetector.h"
+#include "EnemyCar.h"
+#include "Randomizer.h"
 #include <vector>
-#include <random>
-#include <chrono>
+//#include <random>
+//#include <chrono>
 #include <queue>
 #include <cstdlib>
 
@@ -28,7 +30,8 @@ typedef struct PlantInfo
 	float hitOffsety;
 	float hitWidth;
 	float hitHeight;
-};
+} PlantInfo;
+
 
 /* 
 	This class has the logic for Level 1 in the game. It inherits from GameLevel.
@@ -57,31 +60,48 @@ class Level1 : public GameLevel
 	SpriteSheet* plants[3];		// Holds the three different plant sprites that can be put on the screen
 	std::vector<PlantSquare> plantSquares;	// The grid that the plants are placed in
 	std::vector<PlantInfo> plantInfo = { { 0, 0, 100, 100 }, { 20, 0, 60, 100 }, { 10, 5, 30, 40} };
-	float plantOffset;	// the offset for drawing to the screen
+	float plantOffset;			// the offset for drawing plants on the screen
 
-	PlayerCar* playerCar;		// The player's car
-	int score;	// The player's current score
-	int lives;	// The player's current lives
-	GameTimer* timer;	// For timing the game
-	std::default_random_engine generator;	// Random number generator for integers
+	PlayerCar* playerCar;	// The player's car
+	int score;				// The player's current score
+	int lives;				// The player's current lives
+	int difficulty = 0;		// the difficulty level
+	int sceneSpeed;			// this determines the speed of the scene 'movement'	
+	bool inCollision;		// used to determine if a life should be lost
+
+	bool initialized = false;	// To see if the timer has been started for the first time
+	GameTimer* timer;			// For timing the game
+	
+	Randomizer* randomizer;		// Used for getting random numbers
+	
 	float targetLeftx;	// Where the left pixel of the road is meant to go, used for drawing
 	float bendValue;	// How much to curve the road, <0 curve left, 0 straight, >0 curve right
 	float straightLength;		// The length of a straight section of road
 	std::deque<float> roadDims;	// The road dimensions
-	int sceneSpeed;		// this determines the speed of the scene 'movement'	
-	bool inCollision;	// used to determine if a life should be lost
 
-	int GetChoice(int numChoices);	// Pick one of numChoices choices
+	// The audio components to the level
+	AudioComponent* audioComponent;
+	SoundEvent* levelMusic;
+	SoundEvent* dangerMusic;
+	SoundEvent* explosionSFX;
+	const std::wstring musicFile = L"action52.mp3";
+	const std::wstring dangerMusicFile = L"Insane-Gameplay_Looping.mp3";
+	const std::wstring explosionSFXFile = L"Explosion1.mp3";
+
+	// The private methods
 	void InitRoad();	// Initializes the road dimensions with x-values, one x-value for each y value
 	void ShiftRoad();	// Shifts the road dimensions for movement 'down' the screen
 	void SetNewCurve();	// Sets up the next curve in the road
-	float RandNumber(float min, float max, int interval);	// Random number, float
-
-	SoundEvent* levelMusic;
-	SoundEvent* dangerMusic;
-	AudioComponent* audioComponent;
-	const std::wstring musicFile = L"action52.mp3";
-	const std::wstring dangerMusicFile = L"Insane-Gameplay_Looping.mp3";
+	void DrawScore();	// Draws the score in the middle of the screen
+	void DrawLives();	// Draws the lives in the upper left corner of the screen
+	void DrawLivesScore();	// Draw the lives and score in the upper left corner of the screen
+	void RenderPlants();	// Randomly draw plants on the screen
+	void InitPlants();		// Sets up the plant placements at the start of the level
+	void UpdatePlants();	// Randomly places plants somewhere in the grid
+	void SetupGrid();		// Sets up the plantSquares vector with coordinates etc.
+	bool IsRoadHere(float gridx, float gridy);	// Checks if the road is at the coordinates
+	bool CheckPlayerCollision();	// Checks to see if the player sprite has collided with any objects
+	void DrawRoad();		// Draws the background
 
 public:
 	static const int WIN_WIDTH = 1024;	// the window width
@@ -91,20 +111,6 @@ public:
 	void Unload() override;	// Unloads resources
 	void Update() override;	// Updates the state of game objects
 	void Render() override;	// Renders the screen
-
-	void DrawScore();
-
-	void DrawLives();
-
-	void RenderPlants();		// Randomly draw plants on the screen
-	void InitPlants();		// Sets up the plant placements at the start of the level
-	void UpdatePlants();	// Randomly places plants somewhere in the grid
-	void SetupGrid();		// Sets up the plantSquares vector with coordinates etc.
-
-	bool IsRoadHere(float gridx, float gridy);
-	bool CheckPlayerCollision();	// Checks to see if the player sprite has collided with any objects
-
-	void DrawRoad();		// Draws the background
 
 };
 
