@@ -68,7 +68,7 @@ bool Graphics::Init(HWND windowHandle)
 		reinterpret_cast<IUnknown **>(&wfactory));
 	if (!SUCCEEDED(result)) return false;
 	
-	/* Create the text format object */
+	/* Create the text format object for centered text */
 	result = wfactory->CreateTextFormat(
 		msc_fontName,
 		NULL,
@@ -77,12 +77,28 @@ bool Graphics::Init(HWND windowHandle)
 		DWRITE_FONT_STRETCH_NORMAL,
 		msc_fontSize,
 		L"", // locale
-		&textFormat);
+		&textFormatCenter);
 
 	/* Set the text alignment */
 	if (!SUCCEEDED(result)) return false;
-	textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-	textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	textFormatCenter->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+	textFormatCenter->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
+	/* Create the text format object for upper left aligned text */
+	result = wfactory->CreateTextFormat(
+		msc_fontName,
+		NULL,
+		DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		msc_fontSize,
+		L"", // locale
+		&textFormatUpperLeftCorner);
+
+	/* Set the text alignment */
+	if (!SUCCEEDED(result)) return false;
+	textFormatUpperLeftCorner->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatUpperLeftCorner->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	return true;
 }

@@ -1,6 +1,7 @@
 #include "GameController.h"
 #include "Graphics.h"
 #include "Level1.h"
+#include <stdio.h>
 
 
 /*
@@ -37,7 +38,7 @@ void Level1::Load()
 	//UpdatePlants();
 	InitRoad();
 	InitPlants();
-	sceneSpeed = 1.0f;
+	sceneSpeed = 4.0f;
 	plantOffset = 0;
 
 	// Set up player score and lives, set up timer
@@ -49,12 +50,19 @@ void Level1::Load()
 	// Load the music
 	audioComponent = new AudioComponent();
 	levelMusic = new SoundEvent();
+	dangerMusic = new SoundEvent();
 
 	bool result = audioComponent->LoadFile(musicFile, *levelMusic);
 	if (result)
 	{
 		levelMusic->SetLoopForever();
 		audioComponent->PlaySoundEvent(*levelMusic);
+	}
+
+	result = audioComponent->LoadFile(dangerMusicFile, *dangerMusic);
+	if (result)
+	{
+		dangerMusic->SetLoopForever();
 	}
 }
 
@@ -80,6 +88,11 @@ void Level1::Unload()
 */
 void Level1::Update()
 {
+	if (lives < 0)
+	{
+		sceneSpeed = 8.0f;
+	}
+
 	keyboard->GetDeviceState();
 	PressedKeys keys = keyboard->GetKeys();
 	playerCar->Move(keys);
@@ -94,17 +107,6 @@ void Level1::Update()
 		timer->StartTimer();
 	}
 
-	//if (IsPlantHere(playerCar->Getxy().x, playerCar->Getxy().y))
-	//{
-	//	score = 0;
-	//}
-	
-	//Check for plant collision
-	if (CheckPlayerCollision())
-	{
-		score = 0;
-	}
-
 	plantOffset += sceneSpeed;
 	float delta = plantOffset - ((float)GameLevel::WIN_HEIGHT / (float) NUM_SQUARE_Y);
 	if (delta > 0)
@@ -113,6 +115,35 @@ void Level1::Update()
 		//plantOffset = 0;
 		plantOffset = plantOffset - ((float) GameLevel::WIN_HEIGHT / (float) NUM_SQUARE_Y);
 		UpdatePlants();
+	}
+
+	//Check for collisions
+	if (CheckPlayerCollision())
+	{
+		// If the player has collided with something, check that they are not already in a collison.
+		// If so, a life is lost.
+		if (!inCollision)
+		{
+			lives--;
+			
+			// Play different music if the number of lives is now 1
+			if (lives == 1)
+			{ 
+				audioComponent->StopSoundEvent(*levelMusic);
+				audioComponent->PlaySoundEvent(*dangerMusic);
+			}
+		}
+		//score = 0;
+		inCollision = true;
+	}
+	else
+	{
+		// If the player is not in a collision with anything, set the inCollision to false
+		// only if the player was previously in a collision
+		if (inCollision)
+		{
+			inCollision = false;
+		}
 	}
 }
 
@@ -129,6 +160,9 @@ void Level1::Render()
 	RenderPlants();
 	playerCar->DrawSprite();
 	DrawScore();
+	DrawLives();
+
+	
 }
 
 
@@ -142,13 +176,33 @@ void Level1::DrawScore()
 	gfx->GetRenderTarget()->DrawText(
 		scoreText,
 		wcslen(scoreText),
-		gfx->TextFormat(),
+		gfx->TextFormatCenter(),
 		D2D1::RectF(0, 0, renderTargetSize.width, renderTargetSize.height),
 		gfx->WhiteBrush()
 	);
 
 
 }
+
+
+void Level1::DrawLives()
+{
+	// Retrieve the size of the render target.
+	D2D1_SIZE_F renderTargetSize = gfx->GetRenderTarget()->GetSize();
+
+	WCHAR livesText[256];
+	swprintf(livesText, 256, L"%s%d", L"Lives: ", lives);
+	//_itow_s(lives, livesText, 256, 10);
+
+	gfx->GetRenderTarget()->DrawText(
+		livesText,
+		wcslen(livesText),
+		gfx->TextFormatUpperLeftCorner(),
+		D2D1::RectF(0, 0, renderTargetSize.width, renderTargetSize.height),
+		gfx->WhiteBrush()
+	);
+}
+
 
 
 /*
@@ -485,38 +539,5 @@ float Level1::RandNumber(float min, float max, int interval)
 }
 
 
-bool Level1::IsPlantHere(float gridx, float gridy)
-{
-	float offsetx = GameLevel::WIN_WIDTH / NUM_SQUARE_X;
-	float offsety = GameLevel::WIN_HEIGHT / NUM_VISIBLE_SQUARE_Y;
-	float leftx, rightx, topy, bottomy;
-	float gridxRight = gridx + offsetx;
-	float gridyBottom = gridy + offsety;
 
-	int endCrit = plantSquares.size();
-
-	// the inputs are upper left corner of grid square based on grid squares
-	// The roads is drawn one line per pixel height, look at first grid squares worth
-	// of road dimensions. Check if the gridx values fall on the line.
-	for (int i = 0; i < endCrit; i++)
-	{
-		if (plantSquares[i].render)
-		{
-			leftx = plantSquares[i].x;
-			rightx = leftx + offsetx;
-			topy = plantSquares[i].y;
-			bottomy = topy + offsety;
-
-			if ((gridx > leftx && gridx < rightx) || (gridxRight > leftx && gridxRight < rightx))
-			{
-				if ((gridy > topy && gridy < bottomy) || (gridyBottom > topy && gridyBottom < bottomy))
-				{
-					return true;
-				}
-			}
-		}
-	}
-
-	return false;
-}
 

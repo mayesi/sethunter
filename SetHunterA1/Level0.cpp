@@ -57,7 +57,7 @@ void Level0::DrawTitle()
 	gfx->GetRenderTarget()->DrawText(
 		titleText,
 		wcslen(titleText),
-		gfx->TextFormat(),
+		gfx->TextFormatCenter(),
 		D2D1::RectF(0, 0, renderTargetSize.width, renderTargetSize.height),
 		gfx->WhiteBrush()
 	);
@@ -74,7 +74,7 @@ void Level0::DrawLoading()
 	gfx->GetRenderTarget()->DrawText(
 		titleText,
 		wcslen(titleText),
-		gfx->TextFormat(),
+		gfx->TextFormatCenter(),
 		D2D1::RectF(0, 0, renderTargetSize.width, renderTargetSize.height),
 		gfx->WhiteBrush()
 	);

@@ -9,7 +9,7 @@ class Level0 : public GameLevel
 private:
 	SoundEvent* titleMusic;
 	AudioComponent* audioComponent;
-	const std::wstring musicFile = L"Car-Theft-101.wav";
+	const std::wstring musicFile = L"Car-Theft-101.mp3";
 
 	bool initialized = false;
 

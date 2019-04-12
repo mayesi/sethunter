@@ -28,7 +28,8 @@ class Graphics
 	ID2D1SolidColorBrush* grayBrush;		// a gray coloured brush
 	ID2D1SolidColorBrush* whiteBrush;		// a white coloured brush
 	IDWriteFactory* wfactory;				// This factory allows us to create text
-	IDWriteTextFormat* textFormat;			// Text format object
+	IDWriteTextFormat* textFormatCenter;	// Text format object, centered on the screen
+	IDWriteTextFormat* textFormatUpperLeftCorner;	// Text format object, upper left corner
 
 public:
 	
@@ -58,6 +59,7 @@ public:
 
 	ID2D1SolidColorBrush* GrayBrush();
 	ID2D1SolidColorBrush* WhiteBrush() { return whiteBrush; };
-	IDWriteTextFormat* TextFormat() { return textFormat; };
+	IDWriteTextFormat* TextFormatCenter() { return textFormatCenter; };
+	IDWriteTextFormat* TextFormatUpperLeftCorner() { return textFormatUpperLeftCorner; }
 
 };

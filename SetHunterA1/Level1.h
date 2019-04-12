@@ -69,6 +69,7 @@ class Level1 : public GameLevel
 	float straightLength;		// The length of a straight section of road
 	std::deque<float> roadDims;	// The road dimensions
 	int sceneSpeed;		// this determines the speed of the scene 'movement'	
+	bool inCollision;	// used to determine if a life should be lost
 
 	int GetChoice(int numChoices);	// Pick one of numChoices choices
 	void InitRoad();	// Initializes the road dimensions with x-values, one x-value for each y value
@@ -76,11 +77,11 @@ class Level1 : public GameLevel
 	void SetNewCurve();	// Sets up the next curve in the road
 	float RandNumber(float min, float max, int interval);	// Random number, float
 
-	bool IsPlantHere(float gridx, float gridy);
-
 	SoundEvent* levelMusic;
+	SoundEvent* dangerMusic;
 	AudioComponent* audioComponent;
-	const std::wstring musicFile = L"action52.wav";
+	const std::wstring musicFile = L"action52.mp3";
+	const std::wstring dangerMusicFile = L"Insane-Gameplay_Looping.mp3";
 
 public:
 	static const int WIN_WIDTH = 1024;	// the window width
@@ -92,6 +93,8 @@ public:
 	void Render() override;	// Renders the screen
 
 	void DrawScore();
+
+	void DrawLives();
 
 	void RenderPlants();		// Randomly draw plants on the screen
 	void InitPlants();		// Sets up the plant placements at the start of the level
