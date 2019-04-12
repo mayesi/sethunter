@@ -1,5 +1,3 @@
-#include "GameController.h"
-#include "Graphics.h"
 #include "Level1.h"
 #include <stdio.h>
 
@@ -28,6 +26,9 @@ void Level1::Load()
 	plants[1]->AddChromakey();
 	plants[2] = new SpriteSheet((wchar_t*)L"shrub1.bmp", gfx);
 	plants[2]->AddChromakey();
+
+	// Set up the enemy manager
+	enemyManager = new EnemyManager(gfx);
 
 	// Set up the random number generator
 	randomizer = new Randomizer();
@@ -95,6 +96,7 @@ void Level1::Update()
 	if (!initialized)
 	{
 		timer->StartTimer();
+		enemyManager->SpawnEnemy(300, -69, sceneSpeed*2);
 		initialized = true;
 	}
 
@@ -132,8 +134,8 @@ void Level1::Update()
 		UpdatePlants();
 	}
 
-	// Set up an enemy car to spawn and move any existing enemy cars
-
+	// Move any active enemy objects
+	enemyManager->MoveEnemies();  
 
 	//Check for collisions
 	if (CheckPlayerCollision())
@@ -175,6 +177,7 @@ void Level1::Render()
 	DrawRoad();
 	RenderPlants();
 	playerCar->DrawSprite();
+	enemyManager->RenderEnemies();
 	DrawLivesScore();
 }
 

@@ -7,11 +7,9 @@
 #include "SoundEvent.h"
 #include "AudioComponent.h"
 #include "CollisionDetector.h"
-#include "EnemyCar.h"
+#include "EnemyManager.h"
 #include "Randomizer.h"
 #include <vector>
-//#include <random>
-//#include <chrono>
 #include <queue>
 #include <cstdlib>
 
@@ -68,6 +66,9 @@ class Level1 : public GameLevel
 	int difficulty = 0;		// the difficulty level
 	int sceneSpeed;			// this determines the speed of the scene 'movement'	
 	bool inCollision;		// used to determine if a life should be lost
+
+	EnemyManager* enemyManager;	// Used to manage enemy objects
+	int numEnemiesSpawned = 0;	// Keeps track of the total number of enemies spawned in the level
 
 	bool initialized = false;	// To see if the timer has been started for the first time
 	GameTimer* timer;			// For timing the game

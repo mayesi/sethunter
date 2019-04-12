@@ -16,9 +16,9 @@ private:
 
 	HitBox hitbox;
 	const float hitOffsetx = 25.0f;	// from the left side
-	const float hitOffsety = 0.0f;	// from the top
+	const float hitOffsety = 5.0f;	// from the top
 	const float hitWidth = 50.0f;
-	const float hitHeight = 100.0f;
+	const float hitHeight = 90.0f;
 	
 	wchar_t* carImage = (wchar_t*)L"playercar.bmp";	// the bmp file name for the car image
 	float startingx;		// This is the x position that the car starts from when the screen resets
@@ -42,7 +42,6 @@ public:
 	void Move(PressedKeys keys);	// 'Moves' the car based on current speed and which keys are pressed
 
 	void DrawSprite();		// Draws the image to the screen
-	//D2D1_POINT_2F Getxy();	// Returns the coordinates of the car on the screen
 	void SetBoundary(Boundary bounds);	// Set the boundaries for car movement
 	void SetTopSpeed(float top);		// Set the object's top speed
 	float GetSpeed();		// Get the object's current speed

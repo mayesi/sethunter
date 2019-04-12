@@ -179,19 +179,6 @@ void PlayerCar::Decelerate()
 }
 
 
-///* 
-//	Method:			Getxy()
-//	Description:
-//		Returns the x and y coordinates of the car on the screen
-//	Return:
-//		D2D1_POINT_2F point - the x and y coordinates in a D2D1_POINT_2F structure
-//*/
-//D2D1_POINT_2F PlayerCar::Getxy()
-//{
-//	D2D1_POINT_2F point = { x, y };
-//	return point;
-//}
-
 
 /*
 	Method:			DrawSprite()
